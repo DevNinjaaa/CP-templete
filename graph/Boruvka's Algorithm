@@ -1,0 +1,84 @@
+//Boruvka's Algorithm
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+
+const int inf = (int)1e7+7;
+const int N = (int)1e5+7;
+
+struct edge {
+    int v, u, cost;
+};
+
+vector<int> p(N);    // Parent array for union-find
+vector<edge> g;      // Graph edges
+
+// Find the root of a vertex with path compression
+int root(int v) {
+    if (p[v] == v) return v;
+    return p[v] = root(p[v]);
+}
+
+// Union by rank heuristic to merge two sets
+int merge(int u, int v) {
+    v = root(v);
+    u = root(u);
+    if (u == v) return 0;
+    p[v] = u;
+    return 1;
+}
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+
+    g.resize(m); // Resizing the vector to hold all edges
+
+    // Input the graph edges
+    for (int i = 0; i < m; i++) {
+        cin >> g[i].v >> g[i].u >> g[i].cost;
+    }
+
+    int cnt = n; // Number of connected components initially
+    ll ans = 0;  // To store the minimum cost of the MST
+
+    // Initialize each node to be its own parent
+    for (int i = 0; i < n; i++) {
+        p[i] = i;
+    }
+
+    // Main loop of Borůvka's algorithm
+    while (cnt > 1) {
+        vector<int> min_edge(n, -1); // Array to track the minimum edge for each component
+
+        // Iterate over all edges to find the smallest edge for each component
+        for (int i = 0; i < m; i++) {
+            if (root(g[i].v) == root(g[i].u)) continue;
+
+            int r_v = root(g[i].v);
+            int r_u = root(g[i].u);
+
+            if (min_edge[r_v] == -1 || g[i].cost < g[min_edge[r_v]].cost) {
+                min_edge[r_v] = i;
+            }
+            if (min_edge[r_u] == -1 || g[i].cost < g[min_edge[r_u]].cost) {
+                min_edge[r_u] = i;
+            }
+        }
+
+        // Merge the components using the selected minimum edges
+        for (int i = 0; i < n; i++) {
+            if (min_edge[i] != -1) {
+                if (merge(g[min_edge[i]].v, g[min_edge[i]].u)) {
+                    ans += g[min_edge[i]].cost;
+                    cnt--;
+                }
+            }
+        }
+    }
+//https://www.spoj.com/problems/MST/
+    // Output the cost of the minimum spanning tree (MST)
+    cout << ans << endl;
+
+    return 0;
+}
