@@ -1,0 +1,46 @@
+#include <bits/stdc++.h>
+#define ll long long
+using namespace std;
+
+vector<vector<ll>> multi(const vector<vector<ll>>& mat1, const vector<vector<ll>>& mat2, ll mod) {
+    vector<vector<ll>> result(2, vector<ll>(2, 0));
+    result[0][0] = (mat1[0][0] * mat2[0][0] + mat1[0][1] * mat2[1][0]) % mod;
+    result[0][1] = (mat1[0][0] * mat2[0][1] + mat1[0][1] * mat2[1][1]) % mod;
+    result[1][0] = (mat1[1][0] * mat2[0][0] + mat1[1][1] * mat2[1][0]) % mod;
+    result[1][1] = (mat1[1][0] * mat2[0][1] + mat1[1][1] * mat2[1][1]) % mod;
+    return result;
+}
+
+vector<vector<ll>> matrixExpo(vector<vector<ll>> base, ll exp, ll mod) {
+    vector<vector<ll>> result = {{1, 0}, {0, 1}};
+    while (exp > 0) {
+        if (exp % 2 == 1) {
+            result = multi(result, base, mod);
+        }
+        base = multi(base, base, mod);
+        exp /= 2;
+    }
+    return result;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    ll n, m;
+    cin >> n >> m;
+
+    ll mod = 1LL << m;
+    vector<vector<ll>> baseMatrix = {{1, 1}, {1, 0}};
+
+    if (n == 0) {
+        cout << 0 << '\n';
+    } else if (n == 1) {
+        cout << 1 % mod << '\n';
+    } else {
+        vector<vector<ll>> result = matrixExpo(baseMatrix, n - 1, mod);
+        cout << result[0][0] % mod << '\n';
+    }
+
+    return 0;
+}
