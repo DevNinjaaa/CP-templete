@@ -1,0 +1,83 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+void dfs(int v, int p, const vector<vector<int>> &adj, vector<vector<int>> &up,
+         vector<int> &tin, vector<int> &tout, int &timer, int l)
+{
+    tin[v] = ++timer;
+    up[v][0] = p;
+    for (int i = 1; i <= l; ++i)
+        up[v][i] = up[up[v][i - 1]][i - 1];
+
+    for (int u : adj[v])
+    {
+        if (u != p)
+            dfs(u, v, adj, up, tin, tout, timer, l);
+    }
+
+    tout[v] = ++timer;
+}
+
+bool is_ancestor(const vector<int> &tout, const vector<int> &tin, int u, int v)
+{
+    return tin[u] <= tin[v] && tout[u] >= tout[v];
+}
+
+int lca(int u, int v, int l, const vector<vector<int>> &up,
+        const vector<int> &tin, const vector<int> &tout)
+{
+    if (is_ancestor(tout, tin, u, v))
+        return u;
+    if (is_ancestor(tout, tin, v, u))
+        return v;
+    for (int i = l; i >= 0; --i)
+    {
+        if (!is_ancestor(tout, tin, up[u][i], v))
+            u = up[u][i];
+    }
+    return up[u][0];
+}
+
+void preprocess(int root, const vector<vector<int>> &adj, vector<int> &tin,
+                vector<int> &tout, int &timer, vector<vector<int>> &up, int l, int n)
+{
+    tin.resize(n);
+    tout.resize(n);
+    timer = 0;
+    up.assign(n, vector<int>(l + 1));
+    dfs(root, root, adj, up, tin, tout, timer, l);
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+
+    int n, m;
+    cin >> n >> m;
+    vector<vector<int>> adj(n);
+
+    for (int i = 0; i < m; i++)
+    {
+        int u, v;
+        cin >> u >> v;
+        // Assuming 0-indexed input.
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    int l = n > 1 ? ceil(log2(n)) : 1;
+    vector<int> tin, tout;
+    vector<vector<int>> up;
+    int timer;
+
+    int root = 0;
+    preprocess(root, adj, tin, tout, timer, up, l, n);
+
+    int u, v;
+    cin >> u >> v;
+    // If input is 1-indexed:
+    // u--; v--;
+
+    cout << lca(u, v, l, up, tin, tout) << "\n";
+}
